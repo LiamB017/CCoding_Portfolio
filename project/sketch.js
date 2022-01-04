@@ -1,173 +1,92 @@
-let arrows = [];
-let howManyXold, howManyYold 
-
-
-let params = {
-	howManyX: 7,
-	howManyY: 9,
-	offsetX: 80,
-	offsetY: 60,
-	spacingX: 60,
-	spacingY: 60,
-	
-	shape: ['arrow', 'triangle'],
-	strokeWidth: 4,
-	strokeWidthMin:1,
-	strokeWidthMax:11,
-	strokeColor: '#00ddff',
-	fillColor: '#00dd00',
-	drawStroke: true,
-	fillStroke: false,
-
-	howManyXMin: 2,
-	howManyYMin: 2,
-	offsetXMin: 0,
-	offsetYMin: 0,
-	spacingXMin: 5,
-	spacingYMin: 5,
-
-
-	howManyXMax: 30,
-	howManyYMax: 20,
-	offsetXMax: 80,
-	offsetYMax: 80,
-	spacingXMax: 200,
-	spacingYMax: 200,
-
-	scale: 1,
-	scaleMin: 0.1,
-	scaleMax: 3,
-	scaleStep: 0.1
-}
 
 
 
-let gui;
 
-function setup() {
-	createCanvas(800, 600);
+ // declare fireworks array and the variable of gravity and wind which is used in the setup
 
-	// create the GUI
-	gui = createGui('Change Arrow Grid');
-	gui.addObject(params);
-
-	//calculate offsetX and offsetY to center the grid
-	//inside the canvas
-	params.offsetX = width - params.howManyX * params.spacingX/2;
-	params.offsetY = height - params.howManyY * params.spacingY/2;
-	arrows = buildArray(params.howManyX, params.howManyY);
-
+let fireworks = [];
+let gravity;
+let wind;
+//Here I created the variables to be used in the gui
+let params ={
+   col:0,
+   nosparkles:0,
+   winddirect:0,
+   r:0
 
 }
+//Declared the gui variable
+var gui;
 
-function buildArray(x,y) {
-		console.log("===buildArray method!")
-		let tempArrows = []		//getting some arrows going
-		for (let i=0;i<x; i++) {
-			for (let j=0;j<y; j++){
-				let tempArrow = new Arrow(params.offsetX + (params.spacingX *i) , params.offsetY + (params.spacingY *j), 0, params.arrowScale)
-				tempArrows.push(tempArrow);
-			}
-		}
-		return tempArrows;
+ function setup(){
+
+   // Created the gui using quicksettings, I set the position, name, range and used the varialbes from params
+  // This gui allows users to change the color of the fireworks
+   gui=QuickSettings.create(500,25, "Firework Color")
+   .addRange("Color",0,500,params.col,1,
+   function(value){
+      params.col = value
+      sparkles=[];
+      this.firework;
+   })
+   // This gui allows users to change the number of sparkles created when fireworks explode
+   gui=QuickSettings.create(500,120, "No of sparkles")
+   .addRange("Number of Sparkles",0,30,params.nosparkles,1,
+   function(value){
+      params.nosparkles = value
+      sparkles=[];
+      this.firework;
+   })
+   // This gui allows users to change the direction of the wind
+   gui=QuickSettings.create(500,220, "Direction of Wind")
+   .addRange("Wind Direction",-2,+2,params.winddirect,1,
+   function(value){
+      params.winddirect = value
+      fireworks=[];
+      this.firework;
+   })
+   // This gui allows users to change the radius of the fireworks
+   gui=QuickSettings.create(500,320, "Radius")
+   .addRange("Radius of firework",0,20,params.r,1,
+   function(value){
+      params.r = value
+      sparkles=[];
+      this.firework;
+   });
+ 
+    createCanvas(400, 400);
+    // gravity pushes objects down with a force of 0.2
+    // Wind pushes objects to the left or right randomly with a force of 0.2
+    gravity = createVector(0, 0.2);
+    wind = createVector(params.winddirect);
+  
+  
+ background(0);
+ }
+
+ function draw(){
+    // background is redrawn, creating a trail effect
+background(0, 25);
+// Fireworks are created every frame randomly and are pushed into the array
+if (random(1) < 0.04) {
+fireworks.push(new Firework());
 }
+// for each firework object, use the update and show functions, iterate through the array backwards, this means that when spliced 
+for ( let i = fireworks.length - 1; i >= 0; i--) {
+   fireworks[i].update();
+   fireworks[i].show();
 
-function draw() {
-    background(200,0,0);
-    //drawing some arrows from the Array
-	let index = 0;
-
-	//check if change in howManyX or howManyY triggered through UI
-	if (howManyXold != params.howManyX || howManyYold != params.howManyY){
-		console.log("Arrow numbers changed. Rebuilding Array");
-		arrows = buildArray(params.howManyX, params.howManyY);
-		console.log("New array length: ", arrows.length);
-	}
-
-	for (let i=0;i<params.howManyY; i++) {
-		for (let j=0;j<params.howManyX; j++){
-			let curArrow = arrows[index];
-			//update curArrow object with refreshed params from UI
-			curArrow.x = params.offsetX + (params.spacingX * i)
-			curArrow.y = params.offsetY + (params.spacingY * j)
-			curArrow.sc = params.arrowScale
-			//console.log(curArrow)
-			
-
-			curArrow.update(params);
-			curArrow.draw();
-			index = index + 1;
-		}
-	}
-
-	//update values in howManyXold and howManyYold to compare 
-	howManyXold = params.howManyX;
-	howManyYold = params.howManyY;
-
-	
+   // if firework is exploded and an array of sparkles is made, remove the firework object from the array
+   if (fireworks[i].finished()) {
+      fireworks.splice(i, 1);
+   }
 
 }
+console.log(fireworks.length)
+   
 
+      
+   
+ }
 
-
-
-class Arrow {
-	constructor(x, y, rotation, sc) {
-		this.x = x;
-		this.y = y;
-		this.scale = sc;
-		this.fCol = '#ffffff';
-		this.strCol = '#ffffff';
-		this.strW = 5;
-		this.rotation = rotation;
-		this.strBool = true;
-		this.fillBool  = true;
-		
-	}
-
-    update(paraList) {
-        let dx = (mouseX/this.scale) - this.x;	
-        let dy = (mouseY/this.scale) - this.y; 
-		
-        let angle = atan2(dy, dx);
-        this.rotation = angle;
-		this.strBool = paraList.drawStroke;
-		this.strCol = paraList.strokeColor;
-		this.strW = paraList.strokeWidth;
-		this.fillBool = paraList.fillStroke;
-		this.fCol = paraList.fillColor;
-		this.scale = paraList.scale
-    }
-
-	draw() {
-		push();
-			
-			scale(this.scale)
-			translate(this.x/ this.scale, this.y / this.scale);
-			rotate(this.rotation);
-			if (this.fillBool) {
-				fill(this.fCol)
-			} else {
-				noFill();
-			}
-
-			if (this.strBool) {
-				strokeWeight(this.strW)
-				stroke(this.strCol);
-			}
-			else {
-				noStroke();
-			}
-			//arrow shape
-			/*line(-50, -25, 0, -25);
-			line(0, -25, 0, -50);
-			line(0, -50, 50, 0);
-			line(50, 0, 0, 50);
-			line(0, 50, 0, 25);
-			line(0, 25, -50, 25);
-			line(-50, 25, -50, -25);*/
-			//triangle
-			triangle(0,0,25,25,-25,25)
-		pop();
-	}
-}
+ 
