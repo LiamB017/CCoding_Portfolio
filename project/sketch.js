@@ -17,7 +17,7 @@ let params ={
 }
 //Declared the gui variable
 var gui;
-// sss
+// sssss
  function setup(){
 
    // Created the gui using quicksettings, I set the position, name, range and used the varialbes from params
