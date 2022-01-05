@@ -1,3 +1,4 @@
+
 //here I created the class for the sparkle object, which will be used as a blueprint for all sparkle objects
 
 class Sparkle {
