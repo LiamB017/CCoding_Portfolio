@@ -68,7 +68,7 @@ var gui;
     // background is redrawn, creating a trail effect
 background(0, 25);
 // Fireworks are created every frame randomly and are pushed into the array
-if (random(1) < 0.04) {
+if (random(1) < 0.05) {
 fireworks.push(new Firework());
 }
 // for each firework object, use the update and show functions, iterate through the array backwards, this means that when spliced 
